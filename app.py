@@ -43,8 +43,10 @@ def render_node(node):
         # open = "open" if 0 < ratio < 90 else ""
         return f'<li class="directory" data-path="{node["path"]}">{meter}<span class="dirname"> {node["name"]}</span><ul>{child_nodes}</ul></li>'
     else:
-        short_name = extract_episode(node["name"])
-        return f'<li class="file" data-full-name="{node["name"]}" data-short-name="{short_name}" data-path="{node["path"]}">{meter}<span class="filename" >{node["name"]}</span></li>'
+        short_name, is_episode = extract_episode(node["name"])
+        episode_attr = "data-is-episode" if is_episode else ""
+
+        return f'<li class="file" title="{node["name"]}" data-full-name="{node["name"]}" {episode_attr}  data-short-name="{short_name}" data-path="{node["path"]}">{meter}<span class="filename" >{node["name"]}</span></li>'
 
 
 def build_tree(df, dir_path):
@@ -113,9 +115,12 @@ def extract_episode(string):
     matches = re.findall(pattern, string)
     if matches:
         first_match = matches[0]
-        return re.findall(r"[eE]\d\d", first_match)[0]
+        return re.findall(r"[eE]\d\d", first_match)[0].upper(), True
     else:
-        return string
+        return (
+            string,
+            False,
+        )
 
 
 if __name__ == "__main__":
