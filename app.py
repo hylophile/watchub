@@ -37,8 +37,8 @@ def render_node(node):
     if node['type'] == 'directory':
         child_nodes = ''.join([render_node(child) for child in node['children']])
         ratio = node['ratio']
-        open = "open" if 0 < ratio < 90 else ""
-        return f'<li class="directory {open}"><span>{meter} {node["name"]}</span><ul>{child_nodes}</ul></li>'
+        # open = "open" if 0 < ratio < 90 else ""
+        return f'<li class="directory" data-path="{node["path"]}"><span>{meter} {node["name"]}</span><ul>{child_nodes}</ul></li>'
     else:
         return f'<li><span class="file" data-path="{node["path"]}">{meter} {node["name"]}</span></li>'
 

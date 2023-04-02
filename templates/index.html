@@ -18,11 +18,13 @@
         .directory.open:before {
             content: "- ";
             font-family: "mono";
+            cursor: pointer;
         }
 
         .directory:before {
             content: "+ ";
             font-family: "mono";
+            cursor: pointer;
         }
 
         .directory>span {
@@ -42,6 +44,10 @@
             display: block;
         }
 
+        li.directory.hidden {
+            display: none;
+        }
+
         li.file {
             padding-left: 0ch;
         }
@@ -55,18 +61,44 @@
 
 <body>
     <!-- <h1>File Tree</h1> -->
+    <button id="btn-toggle">Toggle showing closed directories</button>
     <ul id="file-tree">
         {{ render_node(tree)|safe }}
     </ul>
     <script>
-        var fileTree = document.getElementById('file-tree');
+        document.title = "🌈 " + decodeURI(location.pathname.split("/").pop()) + " — watchub"
+        document.querySelector("#btn-toggle").addEventListener("click", () => {
+            document.querySelectorAll(".directory:not(.open)").forEach(el => el.classList.toggle("hidden"))
+        })
+        const state = JSON.parse(localStorage.getItem("state") ?? "{}")
+
+        Object.keys(state)
+            .forEach(dir => {
+                const el = document.querySelector(`[data-path='${dir}']`)
+                if (el) {
+                    el.classList.toggle("open")
+                }
+            })
+
+        const fileTree = document.getElementById('file-tree');
         fileTree.addEventListener('click', function (event) {
-            var target = event.target;
-            if (target.tagName === 'SPAN' && target.parentNode.classList.contains('directory')) {
-                target.parentNode.classList.toggle('open');
+            const target = event.target;
+            let dir = target;
+            if (dir.tagName === "SPAN") {
+                dir = dir.parentNode;
+            }
+            if (dir.classList.contains('directory')) {
+                dir.classList.toggle('open');
+                if (dir.classList.contains("open")) {
+                    state[dir.getAttribute("data-path")] = true
+                } else {
+                    delete state[dir.getAttribute("data-path")]
+                }
+                localStorage.setItem("state", JSON.stringify(state));
                 event.stopPropagation();
             }
         });
+
         const fileLinks = document.querySelectorAll('.file');
 
         fileLinks.forEach(link => {
