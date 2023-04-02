@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>File Tree</title>
+    <style>
+        meter {
+            width: 2em;
+            padding-left: 0.1em;
+        }
+
+        ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .directory.open:before {
+            content: "- ";
+            font-family: "mono";
+        }
+
+        .directory:before {
+            content: "+ ";
+            font-family: "mono";
+        }
+
+        .directory>span {
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .file {
+            cursor: pointer;
+        }
+
+        li.directory>ul {
+            display: none;
+        }
+
+        li.directory.open>ul {
+            display: block;
+        }
+
+        li.file {
+            padding-left: 0ch;
+        }
+
+        /* add CSS rule to apply different padding-left values to each level */
+        #file-tree ul {
+            padding-left: 2ch;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <h1>File Tree</h1> -->
+    <ul id="file-tree">
+        {{ render_node(tree)|safe }}
+    </ul>
+    <script>
+        var fileTree = document.getElementById('file-tree');
+        fileTree.addEventListener('click', function (event) {
+            var target = event.target;
+            if (target.tagName === 'SPAN' && target.parentNode.classList.contains('directory')) {
+                target.parentNode.classList.toggle('open');
+                event.stopPropagation();
+            }
+        });
+        const fileLinks = document.querySelectorAll('.file');
+
+        fileLinks.forEach(link => {
+            link.addEventListener('click', (event) => {
+                event.preventDefault(); // prevent the link from navigating
+                const filePath = link.getAttribute('data-path');
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/file-clicked', true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.send(JSON.stringify({'filePath': filePath}));
+            });
+        });
+    </script>
+</body>
+
+</html>
