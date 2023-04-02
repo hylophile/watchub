@@ -47,6 +47,15 @@
         width: 7em;
       }
 
+      .dirname {
+        vertical-align: top;
+        display: inline-block;
+        width: 30em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
       .directory {
         background-color: white;
       }
@@ -103,7 +112,7 @@
       }
 
       #file-tree {
-        padding: 2em 12.5%;
+        padding: 2em 20%;
         margin: auto;
       }
 
@@ -137,9 +146,32 @@
           <input type="checkbox" id="show-full-name" name="show-full-name" />
           <label for="show-full-name">Full filenames</label>
         </div>
+        <div style="margin-top: 1em">
+          <input id="filter" name="filter" placeholder="Filter..." />
+        </div>
       </fieldset>
     </div>
     <script>
+      function applyFilter(s) {
+        document.querySelectorAll(".file,.directory").forEach((el) => {
+          const x = el
+            .getAttribute("data-path")
+            .toLowerCase()
+            .includes(s.toLowerCase());
+          if (x) {
+            let a = el;
+            while (a) {
+              a.classList?.toggle("hidden", false);
+              a.classList?.toggle("open", true);
+              a = a.parentNode;
+            }
+          } else {
+            el.classList.toggle("hidden", true);
+            el.classList?.toggle("open", true);
+          }
+        });
+      }
+
       function toggleFullName(b) {
         const els = [...document.querySelectorAll(".filename")];
         if (b) {
@@ -238,6 +270,10 @@
           localStorage.setItem("foldedState", JSON.stringify(foldedState));
           event.stopPropagation();
         }
+      });
+
+      document.getElementById("filter").addEventListener("input", (e) => {
+        applyFilter(e.target.value);
       });
 
       const fileLinks = document.querySelectorAll(".file");
