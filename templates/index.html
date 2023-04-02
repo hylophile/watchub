@@ -1,117 +1,243 @@
 <!DOCTYPE html>
 <html>
-
-<head>
+  <head>
     <title>File Tree</title>
     <style>
-        meter {
-            width: 2em;
-            padding-left: 0.1em;
-        }
+      meter {
+        width: 40px;
+        margin-right: 5px;
+      }
 
-        ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
+      li {
+        margin: 0;
+        padding: 0;
+      }
 
-        .directory.open:before {
-            content: "- ";
-            font-family: "mono";
-            cursor: pointer;
-        }
+      ul {
+        display: block;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .file {
+        display: inline-block;
+        border: 1px solid #aaa;
+        border-radius: 100px;
+        padding: 0em 1em;
+        margin: 0.1em;
+      }
+      .file:hover {
+        background-color: #eee;
+      }
 
-        .directory:before {
-            content: "+ ";
-            font-family: "mono";
-            cursor: pointer;
-        }
+      .filename,
+      .dirname {
+        vertical-align: top;
+        display: inline-block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 3ch;
+        max-width: 30ch;
+      }
 
-        .directory>span {
-            font-weight: 500;
-            cursor: pointer;
-        }
+      .dirname:hover {
+        text-decoration: underline;
+      }
 
-        .file {
-            cursor: pointer;
-        }
+      .directory.open:before {
+        content: "- ";
+        font-family: "mono";
+        cursor: pointer;
+      }
 
-        li.directory>ul {
-            display: none;
-        }
+      .directory:before {
+        content: "+ ";
+        font-family: "mono";
+        cursor: pointer;
+      }
 
-        li.directory.open>ul {
-            display: block;
-        }
+      .directory > span {
+        font-weight: 500;
+        cursor: pointer;
+      }
 
-        li.directory.hidden {
-            display: none;
-        }
+      .file {
+        cursor: pointer;
+      }
 
-        li.file {
-            padding-left: 0ch;
-        }
+      li.directory :not(.open) > ul {
+        display: none;
+      }
+      /* li.directory.open > ul {
+        display: block;
+      } */
 
-        /* add CSS rule to apply different padding-left values to each level */
-        #file-tree ul {
-            padding-left: 2ch;
-        }
+      .hidden {
+        display: none;
+      }
+
+      /* add CSS rule to apply different padding-left values to each level */
+      #file-tree ul {
+        padding-left: 2ch;
+      }
+
+      /* ul#file-tree {
+        columns: 2;
+      } */
+
+      fieldset {
+        height: max-content;
+        background-color: #ffffff77;
+        min-width: max-content;
+        position: fixed;
+        right: 10px;
+        top: 10px;
+      }
     </style>
-</head>
-
-<body>
+  </head>
+  <body>
     <!-- <h1>File Tree</h1> -->
-    <button id="btn-toggle">Toggle showing closed directories</button>
-    <ul id="file-tree">
+    <div style="display: flex; justify-content: space-between">
+      <ul id="file-tree">
         {{ render_node(tree)|safe }}
-    </ul>
+      </ul>
+      <fieldset>
+        <legend>Options</legend>
+        <div>
+          <input type="checkbox" id="show-folded" name="show-folded" />
+          <label for="show-folded">Folded directories</label>
+        </div>
+        <div>
+          <input type="checkbox" id="show-finished" name="show-finished" />
+          <label for="show-finished">Finished files</label>
+        </div>
+        <div>
+          <input type="checkbox" id="show-full-name" name="show-full-name" />
+          <label for="show-full-name">Full filenames</label>
+        </div>
+      </fieldset>
+    </div>
     <script>
-        document.title = "🌈 " + decodeURI(location.pathname.split("/").pop()) + " — watchub"
-        document.querySelector("#btn-toggle").addEventListener("click", () => {
-            document.querySelectorAll(".directory:not(.open)").forEach(el => el.classList.toggle("hidden"))
-        })
-        const state = JSON.parse(localStorage.getItem("state") ?? "{}")
+      function toggleFullName(b) {
+        const els = [...document.querySelectorAll(".filename")];
+        if (b) {
+          els.forEach(
+            (el) =>
+              (el.innerText = el
+                .closest(".file")
+                .getAttribute("data-full-name"))
+          );
+        } else {
+          els.forEach(
+            (el) =>
+              (el.innerText = el
+                .closest(".file")
+                .getAttribute("data-short-name"))
+          );
+        }
+        localStorage.setItem("showFullName", b);
+      }
 
-        Object.keys(state)
-            .forEach(dir => {
-                const el = document.querySelector(`[data-path='${dir}']`)
-                if (el) {
-                    el.classList.toggle("open")
-                }
-            })
+      function toggleFoldedDirectories(b) {
+        const els = document.querySelectorAll(".directory:not(.open)");
+        if (b) {
+          els.forEach((el) => el.classList.remove("hidden"));
+        } else {
+          els.forEach((el) => el.classList.add("hidden"));
+        }
+        localStorage.setItem("showFolded", b);
+      }
 
-        const fileTree = document.getElementById('file-tree');
-        fileTree.addEventListener('click', function (event) {
-            const target = event.target;
-            let dir = target;
-            if (dir.tagName === "SPAN") {
-                dir = dir.parentNode;
-            }
-            if (dir.classList.contains('directory')) {
-                dir.classList.toggle('open');
-                if (dir.classList.contains("open")) {
-                    state[dir.getAttribute("data-path")] = true
-                } else {
-                    delete state[dir.getAttribute("data-path")]
-                }
-                localStorage.setItem("state", JSON.stringify(state));
-                event.stopPropagation();
-            }
+      function toggleFinishedFiles(b) {
+        const els = [...document.querySelectorAll("meter[value='100']")].map(
+          (el) => el.closest(".directory,.file")
+        );
+        if (b) {
+          els.forEach((el) => el.classList.remove("hidden"));
+        } else {
+          els.forEach((el) => el.classList.add("hidden"));
+        }
+        localStorage.setItem("showFinished", b);
+      }
+
+      document.title =
+        "🌈 " + decodeURI(location.pathname.split("/").pop()) + " — watchub";
+
+      const foldedState = JSON.parse(
+        localStorage.getItem("foldedState") ?? "{}"
+      );
+      Object.keys(foldedState).forEach((dir) => {
+        const el = document.querySelector(`[data-path='${dir}']`);
+        if (el) {
+          el.classList.toggle("open");
+        }
+      });
+
+      const showFolded = JSON.parse(
+        localStorage.getItem("showFolded") ?? "true"
+      );
+      document.querySelector("#show-folded").checked = showFolded;
+      toggleFoldedDirectories(showFolded);
+      document
+        .querySelector("#show-folded")
+        .addEventListener("click", (evt) => {
+          toggleFoldedDirectories(evt.target.checked);
         });
 
-        const fileLinks = document.querySelectorAll('.file');
-
-        fileLinks.forEach(link => {
-            link.addEventListener('click', (event) => {
-                event.preventDefault(); // prevent the link from navigating
-                const filePath = link.getAttribute('data-path');
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', '/file-clicked', true);
-                xhr.setRequestHeader('Content-Type', 'application/json');
-                xhr.send(JSON.stringify({'filePath': filePath}));
-            });
+      const showFinished = JSON.parse(
+        localStorage.getItem("showFinished") ?? "true"
+      );
+      document.querySelector("#show-finished").checked = showFinished;
+      toggleFinishedFiles(showFinished);
+      document
+        .querySelector("#show-finished")
+        .addEventListener("click", (evt) => {
+          toggleFinishedFiles(evt.target.checked);
         });
+
+      const showFullName = JSON.parse(
+        localStorage.getItem("showFullName") ?? "true"
+      );
+      document.querySelector("#show-full-name").checked = showFullName;
+      toggleFullName(showFullName);
+      document
+        .querySelector("#show-full-name")
+        .addEventListener("click", (evt) => {
+          toggleFullName(evt.target.checked);
+        });
+
+      const fileTree = document.getElementById("file-tree");
+      fileTree.addEventListener("click", function (event) {
+        const target = event.target;
+        let dir = target;
+        if (dir.tagName === "SPAN") {
+          dir = dir.parentNode;
+        }
+        if (dir.classList.contains("directory")) {
+          dir.classList.toggle("open");
+          if (dir.classList.contains("open")) {
+            foldedState[dir.getAttribute("data-path")] = true;
+          } else {
+            delete foldedState[dir.getAttribute("data-path")];
+          }
+          localStorage.setItem("foldedState", JSON.stringify(foldedState));
+          event.stopPropagation();
+        }
+      });
+
+      const fileLinks = document.querySelectorAll(".file");
+
+      fileLinks.forEach((link) => {
+        link.addEventListener("click", (event) => {
+          event.preventDefault(); // prevent the link from navigating
+          const filePath = link.getAttribute("data-path");
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", "/file-clicked", true);
+          xhr.setRequestHeader("Content-Type", "application/json");
+          xhr.send(JSON.stringify({ filePath: filePath }));
+        });
+      });
     </script>
-</body>
-
+  </body>
 </html>
