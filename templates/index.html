@@ -171,7 +171,7 @@
         const els = [...document.querySelectorAll("meter[value='100']")].map(
           (el) => el.closest(".directory,.file")
         );
-        els.forEach((el) => el.classList.toggle("hidden", b));
+        els.forEach((el) => el.classList.toggle("hidden", !b));
         localStorage.setItem("showFinished", b);
       }
 
