@@ -38,7 +38,12 @@ def file_clicked():
 def render_node(node):
     meter = f"""<meter min="0" max="100" low="0" high="50" optimum="90" value="{node["ratio"]}"></meter>"""
     if node["type"] == "directory":
-        child_nodes = "".join([render_node(child) for child in node["children"]])
+        child_nodes = "".join(
+            [
+                render_node(child)
+                for child in sorted(node["children"], key=lambda d: d["name"])
+            ]
+        )
         ratio = node["ratio"]
         # open = "open" if 0 < ratio < 90 else ""
         return f'<li class="directory" data-path="{node["path"]}">{meter}<span class="dirname"> {node["name"]}</span><ul>{child_nodes}</ul></li>'
