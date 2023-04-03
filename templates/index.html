@@ -124,6 +124,24 @@
         right: 10px;
         top: 10px;
       }
+
+      .input-container {
+        margin-top: 0.5em;
+        position: relative;
+        display: inline-block;
+      }
+
+      #clear {
+        position: absolute;
+        top: 50%;
+        right: 5px;
+        transform: translateY(-50%);
+        cursor: pointer;
+      }
+
+      #clear:hover {
+        color: #f66;
+      }
     </style>
   </head>
   <body style="margin: 0; padding: 0; height: 100vh" data-shorten="">
@@ -146,33 +164,56 @@
           <input type="checkbox" id="show-full-name" name="show-full-name" />
           <label for="show-full-name">Full filenames</label>
         </div>
-        <div style="margin-top: 1em">
-          <input id="filter" name="filter" placeholder="Filter..." />
+        <div class="input-container">
+          <input type="text" placeholder="Filter..." id="filter" />
+          <span id="clear">✕</span>
         </div>
       </fieldset>
     </div>
     <script>
       const filterKVs = JSON.parse(localStorage.getItem("filterKVs") ?? "{}");
-      function applyFilter(s) {
-        const ss = s.toLowerCase();
-        document.querySelectorAll(".file,.directory").forEach((el) => {
-          const x = el.getAttribute("data-path").toLowerCase().includes(ss);
-          if (x) {
-            let a = el;
-            while (a) {
-              a.classList?.toggle("hidden", false);
-              a.classList?.toggle("open", true);
-              a = a.parentNode;
-            }
-          } else {
-            el.classList.toggle("hidden", true);
-            el.classList?.toggle("open", true);
-          }
+      function applyFilter(searchString) {
+        const searchStringLowerCase = searchString.toLowerCase();
+        document.querySelectorAll(".file").forEach((el) => {
+          const regexMatches = new RegExp(searchStringLowerCase).test(
+            el.getAttribute("data-path").toLowerCase()
+          );
+
+          el.classList?.toggle("hidden", !regexMatches);
+          el.classList?.toggle("shown", regexMatches);
         });
 
-        filterKVs[location.pathname] = ss;
+        document.querySelectorAll(".directory").forEach((el) => {
+          const hasVisibleChild = el.querySelector(".shown");
+          el.classList.toggle("hidden", !hasVisibleChild);
+          el.classList.toggle("open", hasVisibleChild);
+        });
+
+        filterKVs[location.pathname] = searchStringLowerCase;
         localStorage.setItem("filterKVs", JSON.stringify(filterKVs));
       }
+
+      const filterInput = document.getElementById("filter");
+      const clearButton = document.getElementById("clear");
+
+      if (filterInput.value.length > 0) {
+        clearButton.style.display = "inline-block";
+      } else {
+        clearButton.style.display = "none";
+      }
+      filterInput.addEventListener("input", () => {
+        if (filterInput.value.length > 0) {
+          clearButton.style.display = "inline-block";
+        } else {
+          clearButton.style.display = "none";
+        }
+      });
+
+      clearButton.addEventListener("click", () => {
+        filterInput.value = "";
+        clearButton.style.display = "none";
+        applyFilter("");
+      });
 
       function toggleFullName(b) {
         const els = [...document.querySelectorAll(".filename")];
