@@ -134,10 +134,10 @@
       </ul>
       <fieldset>
         <legend>Options</legend>
-        <div>
-          <input type="checkbox" id="show-folded" name="show-folded" />
-          <label for="show-folded">Folded directories</label>
-        </div>
+        <!-- <div>
+                  <input type="checkbox" id="show-folded" name="show-folded" />
+                  <label for="show-folded">Folded directories</label>
+                </div> -->
         <div>
           <input type="checkbox" id="show-finished" name="show-finished" />
           <label for="show-finished">Finished files</label>
@@ -152,12 +152,11 @@
       </fieldset>
     </div>
     <script>
+      const filterKVs = JSON.parse(localStorage.getItem("filterKVs") ?? "{}");
       function applyFilter(s) {
+        const ss = s.toLowerCase();
         document.querySelectorAll(".file,.directory").forEach((el) => {
-          const x = el
-            .getAttribute("data-path")
-            .toLowerCase()
-            .includes(s.toLowerCase());
+          const x = el.getAttribute("data-path").toLowerCase().includes(ss);
           if (x) {
             let a = el;
             while (a) {
@@ -170,6 +169,9 @@
             el.classList?.toggle("open", true);
           }
         });
+
+        filterKVs[location.pathname] = ss;
+        localStorage.setItem("filterKVs", JSON.stringify(filterKVs));
       }
 
       function toggleFullName(b) {
@@ -210,26 +212,30 @@
       document.title =
         "🌈 " + decodeURI(location.pathname.split("/").pop()) + " — watchub";
 
-      const foldedState = JSON.parse(
-        localStorage.getItem("foldedState") ?? "{}"
-      );
-      Object.keys(foldedState).forEach((dir) => {
-        const el = document.querySelector(`[data-path='${dir}']`);
-        if (el) {
-          el.classList.toggle("open");
-        }
-      });
+      // const foldedState = JSON.parse(
+      //   localStorage.getItem("foldedState") ?? "{}"
+      // );
+      // Object.keys(foldedState).forEach((dir) => {
+      //   const el = document.querySelector(`[data-path='${dir}']`);
+      //   if (el) {
+      //     el.classList.toggle("open");
+      //   }
+      // });
+      //
+      // const showFolded = JSON.parse(
+      //   localStorage.getItem("showFolded") ?? "true"
+      // );
+      // document.querySelector("#show-folded").checked = showFolded;
+      // toggleFoldedDirectories(showFolded);
+      // document
+      //   .querySelector("#show-folded")
+      //   .addEventListener("click", (evt) => {
+      //     toggleFoldedDirectories(evt.target.checked);
+      //   });
 
-      const showFolded = JSON.parse(
-        localStorage.getItem("showFolded") ?? "true"
-      );
-      document.querySelector("#show-folded").checked = showFolded;
-      toggleFoldedDirectories(showFolded);
-      document
-        .querySelector("#show-folded")
-        .addEventListener("click", (evt) => {
-          toggleFoldedDirectories(evt.target.checked);
-        });
+      filterEl = document.getElementById("filter");
+      filterEl.value = filterKVs[location.pathname] ?? "";
+      applyFilter(filterEl.value);
 
       const showFinished = JSON.parse(
         localStorage.getItem("showFinished") ?? "true"
