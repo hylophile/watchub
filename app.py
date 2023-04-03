@@ -46,12 +46,12 @@ def render_node(node):
         )
         ratio = node["ratio"]
         # open = "open" if 0 < ratio < 90 else ""
-        return f'<li class="directory" data-path="{node["path"]}">{meter}<span class="dirname"> {node["name"]}</span><ul>{child_nodes}</ul></li>'
+        return f'<li class="directory" data-path="{node["path"]}"><div>{meter}<span class="dirname"> {node["name"]}</span></div><ul>{child_nodes}</ul></li>'
     else:
         short_name, is_episode = extract_episode(node["name"])
         episode_attr = "data-is-episode" if is_episode else ""
 
-        return f'<li class="file" title="{node["name"]}" data-full-name="{node["name"]}" {episode_attr}  data-short-name="{short_name}" data-path="{node["path"]}">{meter}<span class="filename" >{node["name"]}</span></li>'
+        return f'<li class="file" title="{node["name"]}" data-full-name="{node["name"]}" {episode_attr}  data-short-name="{short_name}" data-path="{node["path"]}"><div class="cont">{meter}<span class="filename" >{node["name"]}</span></div></li>'
 
 
 def build_tree(df, dir_path):
@@ -108,8 +108,13 @@ def calculate_ratio_for_file(df, filename):
         return 0
 
     last_row = file_df.iloc[-1]
-    ratio = last_row["pos"] / last_row["duration"]
+    try:
+        ratio = float(last_row["pos"]) / float(last_row["duration"])
+    except:
+        ratio = 0
+
     percent = int(round(ratio * 100))
+
     if percent > 90:
         percent = 100
     return percent

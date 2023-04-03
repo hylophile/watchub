@@ -13,26 +13,27 @@
         width: 40px;
         margin-right: 5px;
       }
+      .cont {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
 
       ul {
         display: block;
         list-style: none;
         margin: 0;
         padding: 0;
+        border-left: 1px dotted #0007;
       }
+
       .file {
         display: inline-block;
         border: 1px solid #aaa;
         border-radius: 100px;
-        padding: 0em 1em;
+        padding: 0em 0.5em;
         margin: 0.1em;
         white-space: nowrap;
-      }
-      .file:hover {
-        background-color: #eee;
-      }
-
-      .file {
         background-color: white;
         vertical-align: top;
         display: inline-block;
@@ -40,55 +41,69 @@
         overflow: hidden;
         text-overflow: ellipsis;
         min-width: 5em;
-        width: 20em;
+        width: 12.2em;
+      }
+
+      .file:hover {
+        background-color: #eee;
       }
 
       [data-shorten] .file[data-is-episode] {
-        width: 7em;
+        width: 6em;
       }
 
       .dirname {
         vertical-align: top;
         display: inline-block;
-        width: 30em;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        width: 80%;
+      }
+
+      .filename {
+        vertical-align: top;
+        white-space: nowrap;
+        display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 16em;
       }
 
       .directory {
         background-color: white;
       }
 
-      .directory.open:hover:before {
+      .directory.open > div:hover:before {
         /* content: "⟶ "; */
         content: "➡ ";
         font-family: "mono";
         cursor: pointer;
       }
-      .directory:hover:before {
+      .directory > div:hover:before {
         /* content: "⟶ "; */
         content: "➡ ";
         font-family: "mono";
         cursor: pointer;
       }
 
-      .directory.open:before {
+      .directory.open > div:before {
         content: "- ";
         font-family: "mono";
         cursor: pointer;
       }
 
-      .directory:before {
+      .directory > div:before {
         content: "+ ";
         width: 5em;
         font-family: "mono";
         cursor: pointer;
       }
 
-      .directory > span {
+      .directory > div {
         font-weight: 500;
         cursor: pointer;
+        white-space: nowrap;
       }
 
       .file {
@@ -108,7 +123,8 @@
 
       /* add CSS rule to apply different padding-left values to each level */
       #file-tree ul {
-        padding-left: 2ch;
+        margin-left: 4px;
+        padding-left: calc(2ch - 4px - 0.1em);
       }
 
       #file-tree {
@@ -303,18 +319,21 @@
       const fileTree = document.getElementById("file-tree");
       fileTree.addEventListener("click", function (event) {
         const target = event.target;
+        console.log(target);
         let dir = target;
-        if (dir.tagName === "SPAN") {
+        if (["SPAN", "METER"].includes(dir.tagName)) {
+          dir = dir.parentNode.parentNode;
+        } else if (dir.tagName === "DIV") {
           dir = dir.parentNode;
         }
         if (dir.classList.contains("directory")) {
           dir.classList.toggle("open");
-          if (dir.classList.contains("open")) {
-            foldedState[dir.getAttribute("data-path")] = true;
-          } else {
-            delete foldedState[dir.getAttribute("data-path")];
-          }
-          localStorage.setItem("foldedState", JSON.stringify(foldedState));
+          // if (dir.classList.contains("open")) {
+          //   // foldedState[dir.getAttribute("data-path")] = true;
+          // } else {
+          //   delete foldedState[dir.getAttribute("data-path")];
+          // }
+          // localStorage.setItem("foldedState", JSON.stringify(foldedState));
           event.stopPropagation();
         }
       });
