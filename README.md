@@ -1,7 +1,9 @@
+![image](https://user-images.githubusercontent.com/3336264/230327809-3de6f530-3363-466d-93fd-131f37db8ce6.png)
+
 # Watchub
 
 A simple webpage which...
-- shows a file tree of media files in a given directory
+- shows a file tree of media files in a given directory (which is just the URL path)
 - shows the progress of each file/folder (i.e. how far the content has been watched) in a `<meter>`
 - opens `mpv` when a file is clicked
 - has live search for file paths (supports Regex)
@@ -33,7 +35,7 @@ systemctl --user daemon-reload
 ```
 
 ``` sh
-systemctl --user start watchub
+systemctl --user enable --now watchub
 ```
 
 And visit `http://localhost:5959`
