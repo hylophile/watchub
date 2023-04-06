@@ -13,6 +13,7 @@
         width: 40px;
         margin-right: 5px;
       }
+
       .cont {
         display: flex;
         justify-content: center;
@@ -25,6 +26,10 @@
         margin: 0;
         padding: 0;
         border-left: 1px dotted #0007;
+      }
+
+      li {
+        /* max-width: calc(100% - 50px); */
       }
 
       .file {
@@ -41,7 +46,7 @@
         overflow: hidden;
         text-overflow: ellipsis;
         min-width: 5em;
-        width: 12.2em;
+        width: 18.4em;
       }
 
       .file:hover {
@@ -80,6 +85,7 @@
         font-family: "mono";
         cursor: pointer;
       }
+
       .directory > div:hover:before {
         /* content: "⟶ "; */
         content: "➡ ";
@@ -113,6 +119,7 @@
       li.directory > ul {
         display: none;
       }
+
       li.directory.open > ul {
         display: block;
       }
@@ -128,23 +135,30 @@
       }
 
       #file-tree {
-        padding: 2em 20%;
+        border: none;
         margin: auto;
+        width: 80ch;
       }
+
+      /* #file-tree ul {
+        width: calc(100% - 2em);
+      } */
 
       fieldset {
         height: max-content;
         background-color: #ffffff77;
-        min-width: max-content;
+        width: max-content;
         position: fixed;
-        right: 10px;
-        top: 10px;
       }
 
       .input-container {
         margin-top: 0.5em;
         position: relative;
         display: inline-block;
+      }
+
+      .sidebar {
+        width: calc((100% - 80ch) / 2);
       }
 
       #clear {
@@ -160,45 +174,52 @@
       }
     </style>
   </head>
+
   <body style="margin: 0; padding: 0; height: 100vh" data-shorten="">
     <!-- <h1>File Tree</h1> -->
-    <div style="height: 100%">
-      <ul id="file-tree">
-        {{ render_node(tree)|safe }}
-      </ul>
-      <fieldset>
-        <legend>Options</legend>
-        <!-- <div>
+    <div style="display: flex; padding: 1em 0">
+      <div class="sidebar"></div>
+      <div style="height: 100%">
+        <ul id="file-tree">
+          {{ render_node(tree)|safe }}
+        </ul>
+      </div>
+      <div class="sidebar">
+        <fieldset>
+          <legend>Options</legend>
+          <!-- <div>
                   <input type="checkbox" id="show-folded" name="show-folded" />
                   <label for="show-folded">Folded directories</label>
                 </div> -->
-        <div>
-          <input type="checkbox" id="show-finished" name="show-finished" />
-          <label for="show-finished">Finished files</label>
-        </div>
-        <div>
-          <input type="checkbox" id="show-full-name" name="show-full-name" />
-          <label for="show-full-name">Full filenames</label>
-        </div>
-        <div class="input-container">
-          <input type="text" placeholder="Filter..." id="filter" />
-          <span id="clear">✕</span>
-        </div>
-      </fieldset>
+          <div>
+            <input type="checkbox" id="show-finished" name="show-finished" />
+            <label for="show-finished">Finished files</label>
+          </div>
+          <div>
+            <input type="checkbox" id="show-full-name" name="show-full-name" />
+            <label for="show-full-name">Full filenames</label>
+          </div>
+          <div class="input-container">
+            <input type="text" placeholder="Filter..." id="filter" />
+            <span id="clear">✕</span>
+          </div>
+        </fieldset>
+      </div>
     </div>
     <script>
       const filterKVs = JSON.parse(localStorage.getItem("filterKVs") ?? "{}");
       function applyFilter(searchString) {
         const searchStringLowerCase = searchString.toLowerCase();
-        document.querySelectorAll(".file").forEach((el) => {
-          const regexMatches = new RegExp(searchStringLowerCase).test(
-            el.getAttribute("data-path").toLowerCase()
-          );
+        try {
+          document.querySelectorAll(".file").forEach((el) => {
+            const regexMatches = new RegExp(searchStringLowerCase).test(
+              el.getAttribute("data-path").toLowerCase()
+            );
 
-          el.classList?.toggle("hidden", !regexMatches);
-          el.classList?.toggle("shown", regexMatches);
-        });
-
+            el.classList?.toggle("hidden", !regexMatches);
+            el.classList?.toggle("shown", regexMatches);
+          });
+        } catch {}
         document.querySelectorAll(".directory").forEach((el) => {
           const hasVisibleChild = el.querySelector(".shown");
           el.classList.toggle("hidden", !hasVisibleChild);
