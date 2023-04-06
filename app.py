@@ -6,15 +6,21 @@ import re
 
 app = Flask(__name__)
 
+wh_pipe_path = os.environ.get("WH_PIPE_PATH")
+wh_root_path = os.environ.get("WH_ROOT_PATH") or "/data/"
+wh_mpv_log = os.environ.get("WH_MPV_LOG") or "~/.config/mpv/hey.log"
+wh_port = os.environ.get("WH_PORT") or "5959"
+wh_debug = True if os.environ.get("WH_DEBUG") == "1" else False
+
 
 @app.route("/<path:path>")
 def index(path):
     # Get the path to the directory to be listed
     # dir_path = request.args.get('dir', '.')
     # dir_path = "/data/arr/media/tv"
-    dir_path = os.path.abspath(f"/data/{path}")
+    dir_path = os.path.abspath(f"{wh_root_path}/{path}")
 
-    df = pd.read_csv("~/.config/mpv/hey.log", parse_dates=["datetime"])
+    df = pd.read_csv(f"{wh_mpv_log}", parse_dates=["datetime"])
     # Build a tree of files and directories
     tree = build_tree(df, dir_path)
 
@@ -28,7 +34,11 @@ def file_clicked():
     file_path = data["filePath"]
 
     try:
-        subprocess.run(["mpv", file_path], check=True)
+        if wh_pipe_path is not None:
+            with open(wh_pipe_path, "w") as pipe:
+                pipe.write(file_path)
+        else:
+            subprocess.run(["mpv", file_path], check=True)
         return jsonify({"success": True})
     except subprocess.CalledProcessError as e:
         print("Error:", e)
@@ -72,14 +82,15 @@ def build_tree(df, dir_path):
             tree["children"].append(sub_tree)
         else:
             # Add a file to the tree
-            ratio = calculate_ratio_for_file(df, filename)
-            file_node = {
-                "name": filename,
-                "path": file_path,
-                "type": "file",
-                "ratio": ratio,
-            }
-            tree["children"].append(file_node)
+            if filename.endswith((".mkv", ".mp4", ".avi")):
+                ratio = calculate_ratio_for_file(df, filename)
+                file_node = {
+                    "name": filename,
+                    "path": file_path,
+                    "type": "file",
+                    "ratio": ratio,
+                }
+                tree["children"].append(file_node)
 
     n_children = len(tree["children"])
     if n_children == 0:
@@ -134,4 +145,4 @@ def extract_episode(string):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=wh_debug, port=wh_port, host="0.0.0.0")
