@@ -11,7 +11,7 @@ A simple webpage which...
 
 For showing the progress, logging functionality needs to be added to `mpv`. This is thankfully very easy thanks to it being scriptable with Lua. Just put `main.lua` in `~/.config/mpv/scripts/log/main.lua`.
 
-## SystemD
+## systemd
 
 To start watchub at system startup, create a service file in `~/.config/systemd/user/watchub.service`:
 
@@ -23,6 +23,7 @@ Description=Watchub service
 Type=simple
 WorkingDirectory=%h/code/watchub
 ExecStart=python app.py
+Environment=DISPLAY=:0
 
 [Install]
 WantedBy=default.target
