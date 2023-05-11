@@ -20,7 +20,7 @@ def index(path):
     # dir_path = "/data/arr/media/tv"
     dir_path = os.path.abspath(f"{wh_root_path}/{path}")
 
-    df = pd.read_csv(f"{wh_mpv_log}", parse_dates=["datetime"])
+    df = pd.read_csv(f"{wh_mpv_log}", sep='\t', parse_dates=["datetime"])
     # Build a tree of files and directories
     tree = build_tree(df, dir_path)
 

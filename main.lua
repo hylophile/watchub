@@ -11,7 +11,7 @@ function write_log_file()
   local media_duration = mp.get_property_number("duration")
   local media_time_pos = mp.get_property_number("time-pos")
   local date_time = os.date("%Y-%m-%dT%H:%M:%S")
-  f:write(string.format("%s,%s,%s,%s\n", date_time, filename, media_time_pos, media_duration))
+  f:write(string.format("%s\t%s\t%s\t%s\n", date_time, filename, media_time_pos, media_duration))
   f:close()
 end
 
